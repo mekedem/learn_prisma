@@ -1,5 +1,6 @@
 import express from 'express';
 import movieRoutes from './routes/movieRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 import {config} from 'dotenv';
 import { connectDB, disconnectDB } from './config/db.js';
@@ -7,10 +8,14 @@ import { connectDB, disconnectDB } from './config/db.js';
 config();
 connectDB();
 
-
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use('/movies', movieRoutes);
+app.use('/auth', authRoutes);
+
 
 const PORT = 5001;
 app.listen(PORT, () => {

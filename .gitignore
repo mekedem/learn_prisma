@@ -2,4 +2,3 @@ node_modules/
 /.pnpm-store/
 .env
 .env.*
-/prisma/migrations/

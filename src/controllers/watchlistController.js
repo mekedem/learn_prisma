@@ -1,7 +1,7 @@
 import { prisma } from "../config/db.js";
 
 const addtowachlistController = async (req, res) => {
-    const { movieId, status, rating, notes, userId } = req.body;
+    const { movieId, status, rating, notes } = req.body;
 
     const movie = await prisma.movie.findUnique({
         where: {
@@ -16,7 +16,7 @@ const addtowachlistController = async (req, res) => {
     const existingInWatchlist = await prisma.watchlistItem.findUnique({
         where: {
             userId_movieId: {
-                userId: userId,
+                userId: req.user.id,
                 movieId: movieId,
             },
         },
@@ -28,7 +28,7 @@ const addtowachlistController = async (req, res) => {
 
     const watchlistItem = await prisma.watchlistItem.create({
         data: {
-            userId,
+            userId: req.user.id,
             movieId,
             status: status || "PLANNED",
             rating,
@@ -43,5 +43,35 @@ const addtowachlistController = async (req, res) => {
         }});
 };
 
+const deleteFromWatchlistController = async (req, res) => {
+    const { movieId } = req.params;
 
-export { addtowachlistController };
+    const watchlistItem = await prisma.watchlistItem.findUnique({
+        where: {
+            id: movieId,
+        },
+    });
+
+    if(!watchlistItem) {
+        return res.status(404).json({ message: "Watchlist item not found" });
+    }
+
+    if(watchlistItem.userId !== req.user.id) {
+        return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    await prisma.watchlistItem.delete({
+        where: {
+            id: movieId,
+        }
+    });
+
+    res.status(200).json({
+        status: "success",
+        data: {
+            message: "Watchlist item deleted successfully"
+        }});
+};
+
+
+export { addtowachlistController, deleteFromWatchlistController };
